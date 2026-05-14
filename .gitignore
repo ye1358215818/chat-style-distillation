@@ -1,0 +1,35 @@
+# Never publish raw private chat data
+exports/
+raw/
+private/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.bak
+*.enc
+*.zip
+*.7z
+*.rar
+*.exe
+*.msi
+*.tgz
+*.tar
+*.tar.gz
+*.txt
+*.csv
+*.json
+*.html
+*.docx
+*.xlsx
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+*.amr
+*.silk
+
+# Allow curated fake samples if explicitly added later
+!assets/
+!assets/fake-sample.*
