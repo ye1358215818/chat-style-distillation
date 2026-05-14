@@ -13,9 +13,10 @@
 - 从用户本人有权处理的聊天记录中提取语气、情绪和关系模式
 - 辅助从电脑微信导出指定联系人的完整聊天记录
 - 检查导出是否完整，比如消息数、起止时间、说话人分布
-- 自动脱敏姓名、wxid、手机号、身份证、路径、URL 等隐私信息
+- 按使用场景做分层隐私处理：本地陪伴保留情感锚点，对外发布强脱敏
 - 生成语气卡、情绪画像、关系纹理、场景回复模型
 - 生成“记忆陪伴模式”，让后续聊天更像那个熟悉的人
+- 用评估规则检查是否变成泛泛的恋爱话术、心理咨询腔或旁白模式
 
 ## 典型使用场景
 
@@ -35,10 +36,12 @@
 
 1. 确认记录来源：本人账号、本人设备，或明确授权。
 2. 获取聊天记录：优先使用已有 `txt/csv/json/html`，也可以按说明从电脑微信本地导出。
-3. 脱敏：去掉姓名、wxid、电话、地址、身份证、转账、路径等隐私。
-4. 校验完整性：消息数、时间范围、说话人、是否漏导。
+3. 分层隐私：本地陪伴用保真模式，对外发布用强脱敏模式。
+4. 校验完整性：消息数、时间范围、说话人、是否漏导、连发习惯、回复延迟、场景分布。
 5. 蒸馏：提取语气、句子长短、情绪模式、亲密表达、冲突模式、修复方式。
-6. 输出：语气卡、情绪画像、关系纹理、场景回复指南、记忆陪伴模式。
+6. 场景建模：区分日常、想念、安慰、吵架、道歉、吃醋、冷淡、修复、冲动联系、反复求确认。
+7. 输出：结构化 profile、语气卡、情绪画像、关系纹理、场景回复指南、记忆陪伴模式。
+8. 评估：检查沉浸感、语气相似度、长度分布、隐私层、情绪陪伴效果。
 
 ## 微信导出
 
@@ -63,10 +66,13 @@
 ## 输出产物
 
 - `style-card.md`：她说话的节奏、口头禅、停顿、标点、表情和亲昵称呼。
+- `style-profile.json`：按 schema 输出的结构化画像，方便后续复用和评估。
 - `emotional-memory-profile.md`：她怎样表达在意、想念、不开心、吃醋、委屈和认真。
 - `relationship-texture.md`：两个人靠近、拉扯、冷掉、和好的方式。
 - `scenario-response-guide.md`：日常、撒娇、难过、吵架、道歉、想念、沉默时的回复范式。
 - `memory-companion-mode.md`：进入聊天陪伴后的完整语气规则。
+- `session-memory.md`：长期陪伴时记录用户现在的触发点、有效安慰方式和风格漂移风险。
+- `evaluation-report.md`：检查这个陪伴模式是否真的像、是否沉浸、是否有用。
 
 ## 陪伴模式
 
@@ -82,14 +88,21 @@
 
 ## 隐私与授权
 
-只处理你有权使用的聊天记录。原始记录、数据库、截图、语音、图片和导出的完整文件都应留在本地；需要分享、发布或提交时，先脱敏，再检查一遍。
+只处理你有权使用的聊天记录。原始记录、数据库、截图、语音、图片和导出的完整文件都应留在本地。
+
+隐私不是一刀切：
+
+- 本地蒸馏层：保留昵称、共同记忆、地点代称、梗和关系细节，因为这是沉浸感的来源。
+- 陪伴产物层：去掉 wxid、手机号、身份证、精确地址、路径等硬标识，保留必要的情感锚点。
+- 发布分享层：强脱敏，只保留假样本或泛化后的描述。
 
 这个仓库的 `.gitignore` 默认会拦截常见隐私文件格式，真正的安全感来自每次发布前多看一眼。
 
 ## 脱敏
 
 ```bash
-python scripts/anonymize_chat.py input.txt output.txt --replace "Real Name=PERSON_A" --replace "City=LOCATION_A"
+python scripts/anonymize_chat.py input.txt companion.txt --mode companion
+python scripts/anonymize_chat.py input.txt publish.txt --mode publish --replace "Real Name=PERSON_A"
 ```
 
 ## 分析
@@ -98,14 +111,30 @@ python scripts/anonymize_chat.py input.txt output.txt --replace "Real Name=PERSO
 python scripts/analyze_chat.py sanitized.txt --self-name "SELF" --other-name "OTHER" --output profile.json
 ```
 
+## 评估
+
+```bash
+python scripts/evaluate_companion.py companion-transcript.txt --output companion-eval.json
+```
+
 ## 目录
 
 ```text
 SKILL.md                         # Skill 主说明
 references/wechat-export.md      # 微信导出流程
+references/wechat-compatibility.md # 微信兼容性和完整性排查
+references/privacy-layers.md     # 分层隐私和保真脱敏
 references/distillation.md       # 蒸馏方法
 references/memory-companion.md   # 记忆陪伴模式
+references/scene-classification.md # 场景分类
+references/emotional-regulation.md # 情绪陪伴内核
+references/evaluation-rubric.md  # 评估标准
+references/long-term-memory.md   # 长期陪伴记忆
+references/package-structure.md  # skill 和 GitHub 文档分层
+references/style-profile.schema.json # 结构化画像 schema
+templates/                       # 语气卡、陪伴模式、会话记忆模板
 scripts/anonymize_chat.py        # 脱敏脚本
 scripts/analyze_chat.py          # 本地统计分析脚本
+scripts/evaluate_companion.py    # 陪伴模式评估脚本
 assets/fake-sample.txt           # 假样本
 ```

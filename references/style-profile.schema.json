@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chat Style Distillation Profile",
+  "type": "object",
+  "required": [
+    "data_health",
+    "voice",
+    "emotional_patterns",
+    "relationship_texture",
+    "scenario_models",
+    "companion_mode"
+  ],
+  "properties": {
+    "data_health": {
+      "type": "object",
+      "required": ["message_count", "first_timestamp", "last_timestamp", "completeness_notes"],
+      "properties": {
+        "message_count": { "type": "integer", "minimum": 0 },
+        "first_timestamp": { "type": ["string", "null"] },
+        "last_timestamp": { "type": ["string", "null"] },
+        "speaker_split": { "type": "object", "additionalProperties": { "type": "integer" } },
+        "completeness_notes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "privacy_layer": {
+      "type": "string",
+      "enum": ["local_source", "companion_artifact", "published_sample"]
+    },
+    "voice": {
+      "type": "object",
+      "required": ["summary", "length_distribution", "rhythm", "phrases", "punctuation", "example_replies"],
+      "properties": {
+        "summary": { "type": "string" },
+        "length_distribution": {
+          "type": "object",
+          "properties": {
+            "one_word": { "type": "string" },
+            "one_line": { "type": "string" },
+            "multi_message": { "type": "string" },
+            "long_form": { "type": "string" }
+          }
+        },
+        "rhythm": { "type": "array", "items": { "type": "string" } },
+        "phrases": { "type": "array", "items": { "type": "string" } },
+        "punctuation": { "type": "array", "items": { "type": "string" } },
+        "example_replies": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "emotional_patterns": {
+      "type": "object",
+      "properties": {
+        "care": { "type": "string" },
+        "missing": { "type": "string" },
+        "hurt": { "type": "string" },
+        "jealousy": { "type": "string" },
+        "anger": { "type": "string" },
+        "withdrawal": { "type": "string" },
+        "repair": { "type": "string" }
+      }
+    },
+    "relationship_texture": {
+      "type": "object",
+      "properties": {
+        "needs": { "type": "array", "items": { "type": "string" } },
+        "wounds": { "type": "array", "items": { "type": "string" } },
+        "loops": { "type": "array", "items": { "type": "string" } },
+        "anchors_to_preserve": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "scenario_models": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "trigger": { "type": "string" },
+          "tone": { "type": "string" },
+          "length": { "type": "string" },
+          "moves": { "type": "array", "items": { "type": "string" } },
+          "sample": { "type": "string" }
+        }
+      }
+    },
+    "companion_mode": {
+      "type": "object",
+      "required": ["activation_rule", "reply_contract", "reality_handling", "session_memory"],
+      "properties": {
+        "activation_rule": { "type": "string" },
+        "reply_contract": { "type": "array", "items": { "type": "string" } },
+        "reality_handling": { "type": "array", "items": { "type": "string" } },
+        "session_memory": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "evaluation": {
+      "type": "object",
+      "properties": {
+        "must_pass": { "type": "array", "items": { "type": "string" } },
+        "known_weaknesses": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

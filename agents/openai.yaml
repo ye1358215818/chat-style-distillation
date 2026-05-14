@@ -1,4 +1,4 @@
 interface:
   display_name: "Chat Memory Companion"
-  short_description: "Build an emotional real-chat companion from chat history"
-  default_prompt: "Export or prepare my authorized chat logs, anonymize them, verify completeness, and distill an ex or lost-contact person into an emotionally faithful real-chat companion style for private chatting."
+  short_description: "Build and evaluate an emotional real-chat companion"
+  default_prompt: "Export or prepare my authorized chat logs, apply the right privacy layer, verify completeness, distill an ex or lost-contact person into an emotionally faithful real-chat companion style, and evaluate the result for private chatting."

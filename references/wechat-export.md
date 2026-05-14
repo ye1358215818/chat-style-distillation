@@ -4,6 +4,8 @@ Use this reference only for authorized exports from the user's own logged-in WeC
 
 Do not use this workflow to access someone else's messages, shared computers, unattended sessions, or accounts the user cannot prove they control.
 
+If export completeness or version support is unclear, also read `references/wechat-compatibility.md`.
+
 ## Decision Tree
 
 1. User already has a readable export.

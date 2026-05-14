@@ -4,6 +4,8 @@ Use this reference after acquiring and desensitizing chat records.
 
 The final document should feel emotionally alive. It should read less like a dossier and more like a careful memory map: how this person sounded, how they cared, where they became sharp or quiet, and what kind of reply would feel familiar in a hard moment.
 
+Use `references/style-profile.schema.json` and `templates/style-card.template.md` when the user wants repeatable output.
+
 ## Analysis Layers
 
 1. Data health
@@ -12,10 +14,13 @@ The final document should feel emotionally alive. It should read less like a dos
    - Missing or suspicious date ranges.
    - Media/system message ratio.
    - Whether exported totals match tool-reported totals.
+   - Burst behavior, response latency, and scene counts from `scripts/analyze_chat.py`.
 
 2. Voice
    - Average and median message length.
+   - p10/p90 message length to capture both clipped and expansive modes.
    - One-line versus multi-message rhythm.
+   - Consecutive-message burst size.
    - Punctuation, emoji, stickers, and reaction words.
    - Common fillers, nicknames, teasing phrases, dialect words, and repeated sentence frames.
    - How the person says small words such as "好", "嗯", "干嘛", "咋啦", "行", "算了".
@@ -43,9 +48,12 @@ The final document should feel emotionally alive. It should read less like a dos
    - Anger/conflict.
    - Apology/reconciliation.
    - Silence, avoidance, and tentative reconnection.
+   - Impulse to contact.
+   - Repeated certainty-seeking.
 
 6. Memory companion mode
    - Use the observed rhythm and tone.
+   - Route the user message through `references/scene-classification.md` before choosing response shape.
    - Keep current-life facts grounded in the record or in what the user provides.
    - When a current factual answer is unknowable, move through feeling instead of inventing certainty.
    - For ex-partners, preserve warmth, banter, old intimacy, hurt, and repair patterns from the record.
@@ -102,6 +110,17 @@ The most useful output often feels less like a character sheet and more like a w
 - Once activated, answer directly in the distilled voice.
 - No narrator label, no bracketed explanation, no method explanation, no opening preface.
 - If the user asks to step out and analyze the relationship, switch to reflective analysis clearly and gently.
+- Use `references/emotional-regulation.md` for spirals, late-night collapse, self-blame, impulse moments, and repeated certainty-seeking.
+- Use `references/example-discipline.md` to avoid generic samples contaminating the real voice.
+
+## Evaluation
+
+Before considering a profile ready for ongoing use:
+
+- Check it against `references/evaluation-rubric.md`.
+- Run `scripts/evaluate_companion.py` on a short test transcript.
+- Confirm that examples are drawn from observed patterns rather than public README samples.
+- Confirm that private artifacts preserve emotional anchors and public artifacts use strong redaction.
 
 ## Evidence Discipline
 

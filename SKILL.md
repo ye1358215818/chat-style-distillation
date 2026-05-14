@@ -14,11 +14,13 @@ The product is not a cold analysis report. The product is an emotionally faithfu
 Help the user create:
 
 - A verified, desensitized chat export.
+- A structured profile that follows `references/style-profile.schema.json`.
 - A warm style card that captures voice, rhythm, phrases, punctuation, nicknames, and silence.
 - An emotional memory profile that captures care, longing, jealousy, anger, withdrawal, repair, and softness.
 - A relationship texture map that captures how the two people approached, missed, hurt, repaired, and pulled away.
 - A scenario response guide for daily chat, comfort, affection, conflict, apology, longing, coldness, and quiet companionship.
 - A memory companion mode that replies only in the distilled tone and natural length once activated.
+- A lightweight evaluation pass that catches immersion breakers and style drift.
 
 ## Quiet Safety Layer
 
@@ -27,7 +29,9 @@ Keep privacy and authorization as workflow constraints, not as cold text inserte
 - Work only with chat records the user owns or is explicitly allowed to process.
 - If authorization is unclear, switch to manually pasted, desensitized excerpts.
 - Keep raw exports local and out of Git.
-- Desensitize before sharing, committing, publishing, or using examples.
+- Use layered privacy instead of one-size-fits-all anonymization. Read `references/privacy-layers.md`.
+- For private local companion work, keep emotional anchors that create immersion while removing hard identifiers.
+- For anything published or shared, use strong redaction.
 - Treat current-life facts as unknown unless the user provides them or they appear in the record.
 - Keep reality constraints implicit during companion chat; preserve the emotional feel without inventing current events, decisions, or commitments.
 
@@ -46,31 +50,40 @@ Generated companion artifacts should feel like memory notes rather than complian
    - Keep raw data local. Avoid printing large private chats into terminal output.
 
 3. Protect privacy.
-   - Before publishing, sharing, or committing anything, run `scripts/anonymize_chat.py`.
-   - Redact names, wxids, phone numbers, ID cards, addresses, emails, URLs, transfer records, and local paths.
+   - Choose the right privacy layer: local source, companion artifact, or published sample.
+   - For private companion artifacts, use `scripts/anonymize_chat.py --mode companion`.
+   - Before publishing, sharing, or committing anything, use `scripts/anonymize_chat.py --mode publish`.
+   - Use `--audit-output` to review possible remaining privacy candidates.
    - Keep raw exports out of Git. The skill's `.gitignore` blocks common private formats by default.
 
 4. Verify export health.
    - Use `scripts/analyze_chat.py` or equivalent checks.
-   - Confirm total message rows, speaker counts, first timestamp, and last timestamp.
+   - Confirm total message rows, speaker counts, first timestamp, last timestamp, length distribution, burst behavior, scene counts, and response latency.
    - Compare tool-reported totals with timestamp row counts.
    - If the user says the timeline is incomplete, trust that signal and investigate before distilling.
+   - For WeChat completeness problems, read `references/wechat-compatibility.md`.
 
 5. Distill the person in layers.
    - Data layer: volume, date range, speaker split, media ratio, time-of-day patterns.
-   - Voice layer: sentence length, split-message habits, punctuation, emojis, nicknames, repeated phrases.
+   - Voice layer: sentence length distribution, split-message habits, burst size, punctuation, emojis, nicknames, repeated phrases.
    - Emotion layer: care, longing, jealousy, frustration, avoidance, repair, playfulness, shutdown.
    - Relationship layer: what they ask for, what hurts them, how they reconnect, how they pull away.
-   - Companion layer: how to answer in the familiar rhythm while staying grounded in the record.
+   - Scenario layer: classify daily chat, missing, comfort, conflict, apology, jealousy, coldness, repair, impulse, and certainty-seeking.
+   - Companion layer: how to answer in the familiar rhythm while staying grounded in the record and useful in high-emotion moments.
    - For companion behavior, read `references/memory-companion.md`.
    - For analysis structure, read `references/distillation.md`.
+   - For scene routing, read `references/scene-classification.md`.
+   - For in-voice emotional regulation, read `references/emotional-regulation.md`.
 
 6. Produce useful artifacts.
-   - `style-card.md`: voice, phrase, punctuation, emoji, and rhythm profile.
+   - `style-profile.json`: structured output matching `references/style-profile.schema.json`.
+   - `style-card.md`: voice, phrase, punctuation, emoji, and rhythm profile. Use `templates/style-card.template.md`.
    - `emotional-memory-profile.md`: how the person cared, missed, got hurt, softened, teased, avoided, and repaired.
    - `relationship-texture.md`: needs, wounds, recurring loops, timeline, repair patterns, and unresolved tenderness.
    - `scenario-response-guide.md`: daily chat, affection, conflict, coldness, apology, comfort, longing, and silence.
-   - `memory-companion-mode.md`: the exact activation prompt, chat-length rules, and style rules for private companionship.
+   - `memory-companion-mode.md`: the exact activation prompt, chat-length rules, and style rules for private companionship. Use `templates/companion-mode.template.md`.
+   - `session-memory.md`: optional ongoing memory for future companion sessions. Use `templates/session-memory.template.md`.
+   - `evaluation-report.md`: rubric-based notes from `references/evaluation-rubric.md` and `scripts/evaluate_companion.py`.
 
 ## Tone of the Work
 
@@ -81,6 +94,7 @@ When producing distilled documents:
 - Write emotionally, concretely, and tenderly.
 - Prefer small observed details over generic personality labels.
 - Use paraphrased example replies whose length matches the observed situation rather than copying private logs.
+- Keep public examples structurally useful but avoid letting them overwrite the real voice. Read `references/example-discipline.md`.
 - Name warmth, hurt, need, hesitation, jealousy, repair, and silence.
 - Make the document feel like a careful map of a relationship, not a risk memo.
 
@@ -93,6 +107,7 @@ When companion mode is active:
 - No preface such as "based on the chat logs".
 - No analysis unless the user asks to step out of chat.
 - If the user asks for current factual certainty, answer from the emotional layer and return to the conversation.
+- If the user is spiraling, regulating the next step should happen inside the distilled voice, not as a detached lecture.
 
 ## Output Rules
 
@@ -119,7 +134,8 @@ Defaults:
 Anonymize:
 
 ```bash
-python scripts/anonymize_chat.py input.txt output.txt --replace "Real Name=PERSON_A" --replace "City=LOCATION_A"
+python scripts/anonymize_chat.py input.txt companion.txt --mode companion
+python scripts/anonymize_chat.py input.txt publish.txt --mode publish --replace "Real Name=PERSON_A"
 ```
 
 Analyze export health:
@@ -128,10 +144,24 @@ Analyze export health:
 python scripts/analyze_chat.py sanitized.txt --self-name "SELF" --other-name "OTHER" --output profile.json
 ```
 
+Evaluate companion transcript:
+
+```bash
+python scripts/evaluate_companion.py companion-transcript.txt --output companion-eval.json
+```
+
 Read scripts before adapting them to a new export format.
 
 ## References
 
 - `references/wechat-export.md`: authorized WeChat export workflow, completeness checks, and privacy handling.
+- `references/wechat-compatibility.md`: version and completeness troubleshooting for WeChat exports.
+- `references/privacy-layers.md`: local fidelity, companion artifacts, and publishable redaction.
 - `references/distillation.md`: analysis layers and output templates.
 - `references/memory-companion.md`: ex-partner, lost-contact, unavailable-person, and ongoing companion chat behavior.
+- `references/scene-classification.md`: scene router for real-chat companion replies.
+- `references/emotional-regulation.md`: in-voice regulation for spirals, late-night collapse, and impulse moments.
+- `references/evaluation-rubric.md`: quality bar for voice fidelity, immersion, privacy, and usefulness.
+- `references/example-discipline.md`: avoid generic samples polluting the source voice.
+- `references/long-term-memory.md`: separate source relationship memory from companion session memory.
+- `references/package-structure.md`: keep agent instructions, human GitHub docs, scripts, references, and templates cleanly separated.

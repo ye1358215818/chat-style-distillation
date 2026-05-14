@@ -33,3 +33,6 @@ private/
 # Allow curated fake samples if explicitly added later
 !assets/
 !assets/fake-sample.*
+
+# Allow public schemas shipped with the skill
+!references/*.schema.json
