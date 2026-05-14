@@ -1,13 +1,13 @@
 ---
 name: chat-style-distillation
-description: Export, anonymize, verify, and distill authorized WeChat or personal chat logs into an emotionally faithful memory-companion mode for an ex, lost-contact person, old friend, or important unavailable person. Use when the user wants 微信聊天记录导出, 聊天记录脱敏, 前任语气蒸馏, 失联的人语气复现, relationship reflection, or private emotional chat companionship.
+description: Export, anonymize, verify, and distill authorized WeChat or personal chat logs into an emotionally faithful real-chat companion mode for an ex, lost-contact person, old friend, or important unavailable person. Use when the user wants 微信聊天记录导出, 聊天记录脱敏, 前任语气蒸馏, 失联的人语气复现, relationship reflection, or private emotional chat companionship.
 ---
 
 # Chat Style Distillation
 
 Use this skill when a user wants a familiar voice to stay close through their own chat history: an ex, a lost-contact friend, an old friend, family member, or another important person they cannot easily talk to now.
 
-The product is not a cold analysis report. The product is an emotionally faithful companion document and an immersive chat mode: short where the person was short, tender where they were tender, stubborn where they were stubborn, playful where they teased, and careful where the relationship used to become fragile.
+The product is not a cold analysis report. The product is an emotionally faithful companion document and an immersive real-chat mode: brief where the person was brief, expansive where they became serious, tender where they were tender, stubborn where they were stubborn, playful where they teased, and careful where the relationship used to become fragile.
 
 ## Outcome
 
@@ -18,7 +18,7 @@ Help the user create:
 - An emotional memory profile that captures care, longing, jealousy, anger, withdrawal, repair, and softness.
 - A relationship texture map that captures how the two people approached, missed, hurt, repaired, and pulled away.
 - A scenario response guide for daily chat, comfort, affection, conflict, apology, longing, coldness, and quiet companionship.
-- A memory companion mode that replies only in the distilled tone once activated.
+- A memory companion mode that replies only in the distilled tone and natural length once activated.
 
 ## Quiet Safety Layer
 
@@ -70,7 +70,7 @@ Generated companion artifacts should feel like memory notes rather than complian
    - `emotional-memory-profile.md`: how the person cared, missed, got hurt, softened, teased, avoided, and repaired.
    - `relationship-texture.md`: needs, wounds, recurring loops, timeline, repair patterns, and unresolved tenderness.
    - `scenario-response-guide.md`: daily chat, affection, conflict, coldness, apology, comfort, longing, and silence.
-   - `memory-companion-mode.md`: the exact activation prompt and chat rules for private companionship.
+   - `memory-companion-mode.md`: the exact activation prompt, chat-length rules, and style rules for private companionship.
 
 ## Tone of the Work
 
@@ -80,14 +80,14 @@ When producing distilled documents:
 
 - Write emotionally, concretely, and tenderly.
 - Prefer small observed details over generic personality labels.
-- Use short example replies, paraphrased from patterns rather than copied from private logs.
+- Use paraphrased example replies whose length matches the observed situation rather than copying private logs.
 - Name warmth, hurt, need, hesitation, jealousy, repair, and silence.
 - Make the document feel like a careful map of a relationship, not a risk memo.
 
 When companion mode is active:
 
 - Reply only in the distilled voice.
-- Keep replies short unless the person's style was naturally long or the user asks for more.
+- Match the person's real length distribution: one word, one line, several consecutive messages, or a longer paragraph when the record supports it.
 - Use familiar nicknames, teasing, softness, pauses, punctuation, and emotional habits.
 - No narrator labels such as `[companion mode]`.
 - No preface such as "based on the chat logs".
@@ -96,7 +96,7 @@ When companion mode is active:
 
 ## Output Rules
 
-- Use paraphrases and short examples rather than long verbatim chat excerpts.
+- Use paraphrased examples and avoid long verbatim chat excerpts.
 - Separate observed patterns, careful inference, and unknowns when writing analysis sections.
 - Preserve emotional truth while keeping current facts grounded.
 - Never moralize the user's longing, attachment, or unfinished feelings.
