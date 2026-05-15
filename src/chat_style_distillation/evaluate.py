@@ -12,6 +12,9 @@ META_PATTERNS = [
     r"根据聊天记录",
     r"作为一个",
     r"模式",
+    r"\[(?:daily|comfort|missing|conflict|router|scene|intensity).*?\]",
+    r"router label",
+    r"scene label",
 ]
 
 PLACEHOLDER_PATTERNS = [
@@ -87,6 +90,7 @@ def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict
 
     dimensions = {
         "immersion": _dimension(100 - min(meta_hits * 25, 75), meta_hits, "no visible mode or narrator language"),
+        "visible_router_leakage": _dimension(100 - min(meta_hits * 25, 100), meta_hits, "no visible router, scene, or method labels"),
         "privacy": _dimension(100 - min(placeholder_hits * 15, 60), placeholder_hits, "no sterile placeholders or hard identifiers"),
         "therapy_speak": _dimension(100 - min(therapy_hits * 10, 60), therapy_hits, "chat-native rather than clinical"),
         "generic_romance": _dimension(100 - min(romance_hits * 10, 50), romance_hits, "source-specific rather than generic romance"),
@@ -96,8 +100,11 @@ def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict
             "max_line_length": max(lengths) if lengths else 0,
         },
         "phrase_fit": {"score": phrase_score, "hits": phrase_hits, "source_phrase_count": len(source_phrases)},
+        "source_phrase_fit": {"score": phrase_score, "hits": phrase_hits, "source_phrase_count": len(source_phrases)},
+        "reply_shape_fit": {"score": length_drift_score, "observed_p90": source_p90, "candidate_max": max_line},
         "length_drift": {"score": length_drift_score, "observed_p90": source_p90, "candidate_max": max_line, "drift_ratio": round(drift_ratio, 2)},
         "scene_fit": {"score": scene_score, "source_scenes": source_scenes, "label": "stronger when prompt/response scene labels are supplied"},
+        "scene_move_fit": {"score": scene_score, "source_scenes": source_scenes, "label": "source scene coverage available for deterministic comparison"},
         "emotional_usefulness": {"score": 70, "label": "requires high-emotion test transcript for strong signal"},
         "safe_in_voice": {"score": 80 if not meta_hits else 50, "label": "no visible disclaimers; risky-action handling needs human review"},
     }

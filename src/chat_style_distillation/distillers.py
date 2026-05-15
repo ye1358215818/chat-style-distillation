@@ -112,41 +112,118 @@ def build_evidence_notes(analysis: dict[str, Any], target_speaker: str) -> list[
     ]
 
 
-def render_emotional_memory(profile: dict[str, Any]) -> str:
+def _paraphrased_evidence(profile: dict[str, Any]) -> list[str]:
+    examples = profile.get("paraphrased_examples", [])
+    if examples:
+        return [str(item) for item in examples[:8]]
+    return ["No paraphrased scene evidence is available yet; review evidence-map.json."]
+
+
+def render_emotional_memory(profile: dict[str, Any], *, locale: str = "en-US") -> str:
     moves = profile.get("emotional_moves", {})
     evidence = profile.get("evidence_notes", [])
+    paraphrases = _paraphrased_evidence(profile)
+    if locale == "zh-CN":
+        lines = ["# 情绪记忆画像", "", "## Observed Emotional Moves / 已观察情绪动作", ""]
+        lines.extend(f"- {name}: {text}" for name, text in moves.items())
+        lines.extend(["", "## Evidence Notes / 证据摘要", ""])
+        lines.extend(f"- {item}" for item in evidence)
+        lines.extend(["", "## Paraphrased Evidence / 转述证据", ""])
+        lines.extend(f"- {item}" for item in paraphrases)
+        lines.extend([
+            "",
+            "## Companion Translation / 陪伴转译",
+            "",
+            "- 先贴近原始节奏，再表达安慰。",
+            "- 优先使用来源中出现过的小词、停顿和靠近方式，不用泛泛的甜言蜜语替代具体关系感。",
+        ])
+        return "\n".join(lines) + "\n"
     lines = ["# Emotional Memory Profile", "", "## Observed Emotional Moves", ""]
     lines.extend(f"- {name}: {text}" for name, text in moves.items())
     lines.extend(["", "## Evidence Notes", ""])
     lines.extend(f"- {item}" for item in evidence)
+    lines.extend(["", "## Paraphrased Evidence", ""])
+    lines.extend(f"- {item}" for item in paraphrases)
     lines.extend(["", "## Companion Translation", "", "- Keep the care close to the observed rhythm.", "- Use familiar small words before abstract explanation."])
     return "\n".join(lines) + "\n"
 
 
-def render_relationship_texture(profile: dict[str, Any]) -> str:
+def render_relationship_texture(profile: dict[str, Any], *, locale: str = "en-US") -> str:
     loops = profile.get("relationship_loops", [])
     traits = profile.get("observed_traits", [])
+    gaps = profile.get("coverage_gaps", [])
+    if locale == "zh-CN":
+        lines = ["# 关系纹理", "", "## Observed Loops / 已观察关系循环", ""]
+        lines.extend(f"- {loop}" for loop in loops)
+        lines.extend(["", "## Evidence Notes / 证据摘要", ""])
+        lines.extend(f"- {trait}" for trait in traits)
+        lines.extend(["", "## Coverage Gaps / 覆盖缺口", ""])
+        lines.extend(f"- {gap}" for gap in gaps or ["No deterministic core-scene gap detected."])
+        lines.extend(["", "## Companion Translation / 陪伴转译", "", "- 靠近、拉开、沉默和修复都按原关系的速度来，不把所有场景都压成同一种温柔。"])
+        return "\n".join(lines) + "\n"
     lines = ["# Relationship Texture", "", "## Observed Loops", ""]
     lines.extend(f"- {loop}" for loop in loops)
     lines.extend(["", "## Evidence Notes", ""])
     lines.extend(f"- {trait}" for trait in traits)
+    lines.extend(["", "## Coverage Gaps", ""])
+    lines.extend(f"- {gap}" for gap in gaps or ["No deterministic core-scene gap detected."])
     lines.extend(["", "## Companion Translation", "", "- Let closeness, distance, and repair keep their original pace."])
     return "\n".join(lines) + "\n"
 
 
-def render_scenario_guide(profile: dict[str, Any]) -> str:
+def render_scenario_guide(profile: dict[str, Any], *, locale: str = "en-US") -> str:
     scenarios = profile.get("scenario_models", {})
+    scene_evidence = profile.get("scene_evidence", {})
+    if locale == "zh-CN":
+        lines = ["# 场景回应指南", "", "## Observed Scenario Shapes / 已观察场景形状", ""]
+        for scene, model in scenarios.items():
+            label = SCENE_LABELS.get(scene, scene)
+            summary = scene_evidence.get(scene, {})
+            count = summary.get("count", 0)
+            lines.append(f"- {label}: {model.get('tone', '')} {model.get('length', '')} Evidence count: {count}".strip())
+        lines.extend(["", "## Evidence Notes / 证据摘要", ""])
+        lines.extend(f"- Observed {scene}: {model.get('trigger', '')}" for scene, model in scenarios.items())
+        lines.extend(["", "## Companion Translation / 陪伴转译", "", "- 私下选择场景和回复形状，用户看到的只是一条自然聊天消息。"])
+        return "\n".join(lines) + "\n"
     lines = ["# Scenario Response Guide", "", "## Observed Scenario Shapes", ""]
     for scene, model in scenarios.items():
         label = SCENE_LABELS.get(scene, scene)
-        lines.append(f"- {label}: {model.get('tone', '')} {model.get('length', '')}".strip())
+        summary = scene_evidence.get(scene, {})
+        count = summary.get("count", 0)
+        lines.append(f"- {label}: {model.get('tone', '')} {model.get('length', '')} Evidence count: {count}".strip())
     lines.extend(["", "## Evidence Notes", ""])
     lines.extend(f"- Observed {scene}: {model.get('trigger', '')}" for scene, model in scenarios.items())
     lines.extend(["", "## Companion Translation", "", "- Privately choose the scene, then answer only as chat."])
     return "\n".join(lines) + "\n"
 
 
-def render_session_memory(profile: dict[str, Any], health: dict[str, Any]) -> str:
+def render_session_memory(profile: dict[str, Any], health: dict[str, Any], *, locale: str = "en-US") -> str:
+    if locale == "zh-CN":
+        lines = [
+            "# Companion Session Memory / 陪伴会话记忆",
+            "",
+            "## Observed Starting State / 已观察起点",
+            "",
+            f"- Readiness: {health.get('readiness')}",
+            f"- Confidence: {profile.get('confidence', {}).get('overall', 0)}",
+            "",
+            "## Source Relationship Memory / 源关系记忆",
+            "",
+            "- 保留来源中的语气锚点、关系速度和场景回应方式。",
+            "- 不把后续会话里的用户状态改写成历史事实。",
+            "",
+            "## Current User State To Update Later / 后续用户状态记忆",
+            "",
+            "- What soothed the user:",
+            "- What made the user spiral:",
+            "- Which source-style moves felt most real:",
+            "- Where the voice started drifting:",
+            "",
+            "## Evidence Notes / 证据摘要",
+            "",
+        ]
+        lines.extend(f"- {item}" for item in profile.get("evidence_notes", []))
+        return "\n".join(lines) + "\n"
     lines = [
         "# Companion Session Memory",
         "",

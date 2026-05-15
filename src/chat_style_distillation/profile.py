@@ -22,6 +22,7 @@ def build_style_profile(
     *,
     privacy_layer: str = "companion_artifact",
     target_speaker: str = "OTHER",
+    evidence_map: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     target = _speaker_summary(analysis, target_speaker)
     observed_traits = build_observed_traits(analysis, target_speaker)
@@ -30,6 +31,7 @@ def build_style_profile(
     reply_shapes = build_reply_shapes(analysis, target_speaker)
     evidence_notes = build_evidence_notes(analysis, target_speaker)
     confidence = confidence_from_analysis(analysis, target)
+    evidence_map = evidence_map or {"coverage": {"missing_core_scenes": []}, "scenes": {}}
     speaker_split = {
         speaker: int(data.get("messages", 0))
         for speaker, data in analysis.get("speakers", {}).items()
@@ -59,6 +61,25 @@ def build_style_profile(
         "relationship_loops": relationship_loops,
         "reply_shapes": reply_shapes,
         "evidence_notes": evidence_notes,
+        "evidence_refs": {
+            scene: [item.get("hash") for item in data.get("items", [])]
+            for scene, data in evidence_map.get("scenes", {}).items()
+        },
+        "scene_evidence": {
+            scene: {
+                "count": data.get("count", 0),
+                "first_timestamp": data.get("first_timestamp"),
+                "last_timestamp": data.get("last_timestamp"),
+            }
+            for scene, data in evidence_map.get("scenes", {}).items()
+        },
+        "paraphrased_examples": [
+            item.get("paraphrase", "")
+            for data in evidence_map.get("scenes", {}).values()
+            for item in data.get("items", [])[:2]
+            if item.get("paraphrase")
+        ],
+        "coverage_gaps": evidence_map.get("coverage", {}).get("missing_core_scenes", []),
         "confidence": confidence,
         "voice": {
             "summary": "Deterministic profile built from observed rhythm, repeated phrases, scenes, and reply shapes.",

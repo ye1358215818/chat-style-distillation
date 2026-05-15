@@ -8,7 +8,7 @@ from .models import Message, SceneMatch
 SCENE_KEYWORDS: dict[str, list[str]] = {
     "daily": ["早", "晚安", "吃饭", "睡", "起床", "上班", "下班", "到家", "干嘛", "morning", "hi", "hey"],
     "missing": ["想你", "想我", "抱抱", "见你", "梦到", "舍不得", "miss"],
-    "comfort": ["别哭", "别硬撑", "我在", "抱抱", "没事", "慢慢说", "听着", "tired", "累"],
+    "comfort": ["别哭", "别硬撑", "我在", "抱抱", "没事", "慢慢说", "听着", "tired", "累", "listen", "listening", "push yourself"],
     "conflict": ["算了", "随便", "你每次", "生气", "吵", "烦", "不想说"],
     "apology": ["对不起", "抱歉", "错了", "原谅", "不是故意", "sorry"],
     "jealousy": ["吃醋", "谁啊", "别人", "前任", "男的", "女的"],

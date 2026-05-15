@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=61"]
-build-backend = "setuptools.build_meta"
+requires = []
+build-backend = "build_backend"
+backend-path = ["."]
 
 [project]
 name = "chat-style-distillation"
-version = "0.4.0"
+version = "0.5.0"
 description = "Local chat style distillation into private emotional companion bundles"
 requires-python = ">=3.10"
 

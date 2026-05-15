@@ -281,6 +281,23 @@ def parser_choices() -> list[str]:
 
 
 def infer_format(path: Path) -> str:
+    sample = path.read_text(encoding="utf-8", errors="ignore")[:4096].lstrip()
+    if sample.startswith("[") or sample.startswith("{"):
+        try:
+            json.loads(sample if len(sample) < 4096 else path.read_text(encoding="utf-8"))
+            return "json"
+        except json.JSONDecodeError:
+            pass
+    first_line = sample.splitlines()[0] if sample.splitlines() else ""
+    lowered = first_line.lower()
+    if "," in first_line and any(name in lowered.split(",") for name in ("timestamp", "time", "datetime")):
+        return "csv"
+    if "<html" in sample.lower() or 'class="message"' in sample.lower() or "class='message'" in sample.lower():
+        return "html"
+    if WECHAT_BLOCK_RE.match(first_line):
+        return "wechat-text"
+    if TIMESTAMP_RE.search(sample):
+        return "timestamp-text"
     suffix = path.suffix.lower()
     if suffix == ".json":
         return "json"

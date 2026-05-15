@@ -1,6 +1,6 @@
 # Output Bundle Contract
 
-The v4 output bundle is the handoff unit for a private relationship-memory companion. It should tell the user what was processed, how healthy the export is, what privacy layer was used, what emotional-memory artifacts are available, and whether active companion chat is ready.
+The v5 output bundle is the handoff unit for a private relationship-memory companion. It should tell the user what was processed, how healthy the export is, what evidence supports the profile, what privacy layer was used, what emotional-memory artifacts are available, how generated replies evaluated, and whether active companion chat is ready.
 
 It should feel like a careful memory companion product, not a cold audit packet.
 
@@ -13,6 +13,7 @@ It should feel like a careful memory companion product, not a cold audit packet.
 | `analysis-summary.json` | Deterministic metrics, scene counts, burst behavior, latency, input format |
 | `sanitized-chat.txt` | Local intermediate text after privacy processing; not for publishing |
 | `privacy-candidates.json` | Remaining privacy candidates for manual review |
+| `evidence-map.json` | Scene evidence windows with hashes, paraphrases, signals, counts, and time ranges |
 | `style-profile.json` | Structured profile following `references/style-profile.schema.json` |
 | `style-card.md` | Human-readable voice, rhythm, phrase, punctuation, silence, and anchor map |
 | `emotional-memory-profile.md` | How the person expressed care, missing, hurt, jealousy, withdrawal, repair, softness |
@@ -21,17 +22,20 @@ It should feel like a careful memory companion product, not a cold audit packet.
 | `private-emotional-router.md` | Hidden routing rules for scene, intensity, action risk, reality risk, and reply shape |
 | `memory-companion-mode.md` | Activation contract and active in-chat behavior |
 | `session-memory.md` | Ongoing user-care memory, separate from source voice |
+| `evaluation-transcript.json` | Evaluation prompts, deterministic generated replies, expected shapes, scores, and warnings |
 | `evaluation-report.json` | Machine-readable fidelity, immersion, privacy, usefulness, and drift checks |
 | `evaluation-report.md` | Human-readable evaluation summary |
+| `readiness-report.json` | Unified readiness state, blocking issues, warnings, and next action |
+| `session-memory.schema.json` | Schema separating source relationship memory from current user-state memory |
 | `manifest.json` | Source hash, parser format, date range, privacy mode, redaction counts, artifact list |
 
 ## Readiness States
 
-Readiness must come from health and review signals, not optimism.
+Readiness must come from `readiness.py`, not optimism or a single artifact.
 
-- `draft`: artifacts exist, but voice, privacy, scene coverage, or evaluation has not been reviewed.
-- `review-needed`: data health, parser warnings, privacy candidates, scene coverage, evidence discipline, or evaluation has unresolved gaps.
-- `ready-for-private-companion`: private local use is reasonable after review; export health is acceptable, privacy candidates are handled, key scenes are covered, and active chat has no visible narrator, method, scene, intensity, or router labels.
+- `draft`: artifacts exist, but evidence coverage or evaluation has non-blocking gaps.
+- `review-needed`: data health, parser warnings, privacy candidates, scene coverage, evidence discipline, or evaluation has blocking gaps.
+- `ready-for-private-companion`: private local use is reasonable after review; export health is acceptable, privacy candidates are handled, core scenes are covered, and active chat has no visible narrator, method, scene, intensity, or router labels.
 
 None of these readiness states means publishable. Publishing requires `--mode publish` plus separate manual review.
 
@@ -44,8 +48,9 @@ Use these signals when choosing the state:
 - Speaker split and speaker mapping confidence.
 - Parser format and parse warnings.
 - Scene coverage for daily, missing, comfort, conflict, apology, coldness, repair, impulse, and certainty-seeking.
+- Evidence map coverage, hash references, and paraphrased examples.
 - Privacy candidates and redaction counts.
-- Evaluation warnings for visible labels, narrator text, generic romance, therapy-speak drift, and length mismatch.
+- Evaluation transcript warnings for visible labels, narrator text, generic romance, therapy-speak drift, source phrase mismatch, scene move mismatch, and length drift.
 - Human review notes on whether the voice feels specific rather than generic.
 
 ## Bundle Index Requirements
@@ -58,7 +63,7 @@ The index should include:
 - Parser format and parse warnings.
 - Privacy mode, anchors retained, and whether publishing is allowed.
 - Export health summary.
-- Companion readiness state and why.
+- Companion readiness state from `readiness-report.json` and why.
 - Links to artifacts.
 - Known gaps and suggested next action.
 
@@ -68,6 +73,7 @@ The index should include:
 - `relationship-texture.md` should preserve closeness, friction, unfinished tenderness, repair habits, and boundaries.
 - `scenario-response-guide.md` should help the companion choose reply shape without exposing scene labels to the user.
 - `session-memory.md` should track what helps the user now and must not rewrite the source voice.
+- `evidence-map.json` should use hashes and paraphrases, never raw private message text.
 - Examples should be paraphrased and source-shaped; do not copy raw private messages into publishable docs.
 
 ## Privacy Rule

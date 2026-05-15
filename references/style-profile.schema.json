@@ -8,6 +8,10 @@
     "emotional_patterns",
     "relationship_texture",
     "scenario_models",
+    "evidence_refs",
+    "scene_evidence",
+    "paraphrased_examples",
+    "coverage_gaps",
     "companion_mode"
   ],
   "properties": {
@@ -44,6 +48,36 @@
     },
     "evidence_notes": {
       "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence_refs": {
+      "type": "object",
+      "description": "Scene-to-evidence-hash references. Hashes point into evidence-map.json and must not expose raw text.",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "scene_evidence": {
+      "type": "object",
+      "description": "Per-scene coverage summary derived from evidence-map.json.",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "count": { "type": "integer", "minimum": 0 },
+          "first_timestamp": { "type": ["string", "null"] },
+          "last_timestamp": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "paraphrased_examples": {
+      "type": "array",
+      "description": "Paraphrased source-shaped examples, never raw private chat text.",
+      "items": { "type": "string" }
+    },
+    "coverage_gaps": {
+      "type": "array",
+      "description": "Core scenes missing enough evidence for confident private companion use.",
       "items": { "type": "string" }
     },
     "confidence": {

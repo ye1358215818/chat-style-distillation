@@ -47,6 +47,7 @@ class V3PipelineTests(unittest.TestCase):
             expected_files = {
                 "sanitized-chat.txt",
                 "privacy-candidates.json",
+                "evidence-map.json",
                 "analysis-summary.json",
                 "style-profile.json",
                 "bundle-index.md",
@@ -60,6 +61,9 @@ class V3PipelineTests(unittest.TestCase):
                 "session-memory.md",
                 "evaluation-report.json",
                 "evaluation-report.md",
+                "evaluation-transcript.json",
+                "readiness-report.json",
+                "session-memory.schema.json",
                 "manifest.json",
             }
             actual_files = {path.name for path in output_dir.iterdir() if path.is_file()}

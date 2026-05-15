@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Companion Session Memory",
+  "type": "object",
+  "description": "Separates the distilled source relationship memory from the current user's ongoing state memory.",
+  "required": [
+    "source_relationship_memory",
+    "current_user_state",
+    "effective_soothing_moves",
+    "style_drift_risks"
+  ],
+  "properties": {
+    "source_relationship_memory": {
+      "type": "object",
+      "description": "Stable memories distilled from the original chat source.",
+      "properties": {
+        "voice_anchors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "relationship_anchors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "scene_patterns": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "current_user_state": {
+      "type": "object",
+      "description": "Mutable notes from ongoing companion sessions, separate from the source person's historical voice.",
+      "properties": {
+        "recent_triggers": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recent_needs": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "do_not_intensify": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "effective_soothing_moves": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "style_drift_risks": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

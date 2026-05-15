@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, date
 from typing import Any
 
 from .metrics import is_media_or_system
@@ -12,12 +12,25 @@ def _month_key(timestamp: datetime) -> str:
     return timestamp.strftime("%Y-%m")
 
 
-def assess_health(messages: list[Message]) -> dict[str, Any]:
+def _parse_date(value: str | None) -> date | None:
+    if not value:
+        return None
+    return datetime.strptime(value, "%Y-%m-%d").date()
+
+
+def assess_health(
+    messages: list[Message],
+    *,
+    min_messages: int = 50,
+    expected_start: str | None = None,
+    expected_end: str | None = None,
+    relationship_mode: str = "other",
+) -> dict[str, Any]:
     timestamped = [message for message in messages if message.timestamp]
     issues: list[dict[str, Any]] = []
     total = len(messages)
 
-    if total < 50:
+    if total < min_messages:
         issues.append({"code": "low_volume", "severity": "medium", "detail": f"Only {total} parsed message(s)."})
 
     previous: Message | None = None
@@ -61,6 +74,13 @@ def assess_health(messages: list[Message]) -> dict[str, Any]:
     if total and media_ratio >= 0.3:
         issues.append({"code": "high_media_ratio", "severity": "medium", "detail": f"Media/system ratio is {media_ratio}."})
 
+    start = _parse_date(expected_start)
+    end = _parse_date(expected_end)
+    if start and timestamped and timestamped[0].timestamp and timestamped[0].timestamp.date() > start:
+        issues.append({"code": "expected_start_gap", "severity": "medium", "detail": f"First parsed message is after expected start {expected_start}."})
+    if end and timestamped and timestamped[-1].timestamp and timestamped[-1].timestamp.date() < end:
+        issues.append({"code": "expected_end_gap", "severity": "medium", "detail": f"Last parsed message is before expected end {expected_end}."})
+
     month_counts = Counter(_month_key(message.timestamp) for message in timestamped if message.timestamp)
     severe = any(issue["severity"] == "high" for issue in issues)
     if not messages or severe or any(issue["code"] in {"low_volume", "time_gap", "single_speaker"} for issue in issues):
@@ -81,4 +101,10 @@ def assess_health(messages: list[Message]) -> dict[str, Any]:
         "month_counts": dict(sorted(month_counts.items())),
         "largest_gap_days": round(max_gap_days, 2),
         "issues": issues,
+        "config": {
+            "min_messages": min_messages,
+            "expected_start": expected_start,
+            "expected_end": expected_end,
+            "relationship_mode": relationship_mode,
+        },
     }

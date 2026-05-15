@@ -8,6 +8,10 @@ bundles/
 outputs/
 distilled*/
 __pycache__/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
 *.pyc
 *.db
 *.db-shm
