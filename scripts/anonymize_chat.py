@@ -71,7 +71,7 @@ def main() -> None:
         print("No redactions matched.")
 
     if args.audit_output:
-        candidates = audit_candidates(sanitized)
+        candidates = audit_candidates(sanitized, full=True)
         args.audit_output.parent.mkdir(parents=True, exist_ok=True)
         args.audit_output.write_text(json.dumps(candidates, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(f"Audit: {args.audit_output}")

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import re
+import hashlib
 from pathlib import Path
+from typing import Any
 
 
 HARD_IDENTIFIER_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
@@ -117,8 +119,19 @@ def anonymize(
     return text, counts
 
 
-def audit_candidates(text: str, limit: int = 80) -> dict[str, list[str]]:
-    candidates: dict[str, list[str]] = {}
+def _safe_candidate(value: str, full: bool) -> dict[str, Any]:
+    digest = hashlib.sha256(value.encode("utf-8")).hexdigest()[:16]
+    if full:
+        return {"value": value, "hash": digest, "length": len(value)}
+    if len(value) <= 6:
+        preview = "*" * len(value)
+    else:
+        preview = value[:3] + "..." + value[-2:]
+    return {"preview": preview, "hash": digest, "length": len(value)}
+
+
+def audit_candidates(text: str, limit: int = 80, *, full: bool = False) -> dict[str, list[dict[str, Any]]]:
+    candidates: dict[str, list[dict[str, Any]]] = {}
     for label, pattern in AUDIT_PATTERNS:
         seen: list[str] = []
         for match in pattern.finditer(text):
@@ -128,5 +141,5 @@ def audit_candidates(text: str, limit: int = 80) -> dict[str, list[str]]:
             if len(seen) >= limit:
                 break
         if seen:
-            candidates[label] = seen
+            candidates[label] = [_safe_candidate(value, full) for value in seen]
     return candidates

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chat-style-distillation"
+version = "0.4.0"
+description = "Local chat style distillation into private emotional companion bundles"
+requires-python = ">=3.10"
+
+[project.scripts]
+chat-style-distill = "chat_style_distillation.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]

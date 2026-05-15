@@ -32,6 +32,24 @@ def _dimension(score: int, hits: int, label: str) -> dict[str, Any]:
     return {"score": max(score, 0), "hits": hits, "label": label}
 
 
+def _source_profile(profile: dict[str, Any] | None, analysis: dict[str, Any] | None) -> tuple[list[str], float, list[str]]:
+    phrases: list[str] = []
+    p90 = 240.0
+    scenes: list[str] = []
+    if profile:
+        phrases.extend(str(item) for item in profile.get("voice", {}).get("phrases", []) if item)
+        scenes.extend(str(scene) for scene in profile.get("scenario_models", {}))
+    if analysis:
+        speakers = analysis.get("speakers", {})
+        target = next(iter(speakers.values()), {})
+        if target:
+            phrases.extend(str(phrase) for phrase, _count in target.get("top_short_phrases", []) if phrase)
+            p90 = float(target.get("p90_text_length") or p90)
+            scenes.extend(str(scene) for scene, _count in target.get("scene_counts", []) if scene)
+    deduped_phrases = list(dict.fromkeys(phrases))
+    return deduped_phrases, p90, list(dict.fromkeys(scenes))
+
+
 def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict[str, Any] | None = None) -> dict[str, Any]:
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     lengths = [len(line) for line in lines]
@@ -39,6 +57,17 @@ def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict
     placeholder_hits = count_patterns(text, PLACEHOLDER_PATTERNS)
     therapy_hits = sum(text.count(word) for word in THERAPY_SPEAK)
     romance_hits = sum(text.count(word) for word in GENERIC_ROMANCE)
+    source_phrases, source_p90, source_scenes = _source_profile(profile, analysis)
+    phrase_hits = sum(text.count(phrase) for phrase in source_phrases if phrase)
+    phrase_score = 100
+    if source_phrases and phrase_hits == 0:
+        phrase_score = 55
+    elif source_phrases:
+        phrase_score = min(100, 70 + phrase_hits * 10)
+    max_line = max(lengths) if lengths else 0
+    drift_ratio = max_line / max(source_p90, 1)
+    length_drift_score = 100 if drift_ratio <= 2.5 else max(35, int(100 - min((drift_ratio - 2.5) * 12, 65)))
+    scene_score = 85 if source_scenes else 65
 
     warnings: list[str] = []
     if meta_hits:
@@ -51,6 +80,10 @@ def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict
         warnings.append("Contains generic romance wording unsupported by source evidence.")
     if lines and max(lengths) > 240:
         warnings.append("Contains very long chat lines; verify this matches the source person's real style.")
+    if source_phrases and phrase_hits == 0:
+        warnings.append("No source phrase anchors detected; verify source phrase fit before companion use.")
+    if drift_ratio > 2.5:
+        warnings.append("Candidate length drifts beyond the observed source length distribution.")
 
     dimensions = {
         "immersion": _dimension(100 - min(meta_hits * 25, 75), meta_hits, "no visible mode or narrator language"),
@@ -62,7 +95,9 @@ def evaluate(text: str, *, profile: dict[str, Any] | None = None, analysis: dict
             "avg_line_length": round(sum(lengths) / len(lengths), 2) if lengths else 0,
             "max_line_length": max(lengths) if lengths else 0,
         },
-        "scene_fit": {"score": 70, "label": "requires human review unless prompt/response scene labels are supplied"},
+        "phrase_fit": {"score": phrase_score, "hits": phrase_hits, "source_phrase_count": len(source_phrases)},
+        "length_drift": {"score": length_drift_score, "observed_p90": source_p90, "candidate_max": max_line, "drift_ratio": round(drift_ratio, 2)},
+        "scene_fit": {"score": scene_score, "source_scenes": source_scenes, "label": "stronger when prompt/response scene labels are supplied"},
         "emotional_usefulness": {"score": 70, "label": "requires high-emotion test transcript for strong signal"},
         "safe_in_voice": {"score": 80 if not meta_hits else 50, "label": "no visible disclaimers; risky-action handling needs human review"},
     }

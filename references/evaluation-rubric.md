@@ -5,6 +5,7 @@ Use this before trusting a companion profile for ongoing chat.
 ## Must Pass
 
 - Replies stay in chat form with no narrator label, method explanation, or mode preface.
+- Active companion replies never show scene, intensity, router, readiness, or evaluation labels.
 - Reply length follows the source style and scene rather than a fixed short-answer habit.
 - Private companion artifacts keep emotional anchors where they matter.
 - Published samples remove direct identifiers and raw chat content.
@@ -20,7 +21,7 @@ Use this before trusting a companion profile for ongoing chat.
 | Scene fit | same tone always | reacts to broad mood | scene-specific moves and length |
 | Emotional usefulness | flat comfort | some soothing | reduces spirals while staying intimate |
 | Privacy fit | over-redacted or leaking | mostly balanced | keeps anchors locally and redacts for publishing |
-| Immersion | explains itself | mostly chat-like | fully chat-native, no旁白 |
+| Immersion | explains itself or shows labels | mostly chat-like | fully chat-native, no旁白 or visible router labels |
 | Evidence discipline | guesses traits | mixes evidence and inference | marks observed/inferred/unknown in analysis artifacts |
 
 ## Lightweight Script Check

@@ -12,7 +12,7 @@ Keep those layers separate.
 - `SKILL.md`: core trigger, workflow, and routing instructions.
 - `references/`: deeper guidance loaded only when needed.
 - `scripts/`: deterministic local tools for export health, privacy, and evaluation.
-- `templates/`: output shapes for repeatable artifacts.
+- `templates/`: output shapes for repeatable style, emotional-memory, relationship, scenario, companion, and session artifacts.
 
 ## Human Layer
 

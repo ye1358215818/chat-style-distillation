@@ -1,4 +1,4 @@
 interface:
-  display_name: "Chat Memory Companion"
-  short_description: "Build and evaluate an emotional real-chat companion"
-  default_prompt: "Export or prepare my authorized chat logs, apply the right privacy layer, verify completeness, distill an ex or lost-contact person into an emotionally faithful real-chat companion style, and evaluate the result for private chatting."
+  display_name: "Relationship Memory Companion"
+  short_description: "Build a private relationship-memory companion bundle"
+  default_prompt: "Export or prepare my authorized chat logs, apply the companion privacy layer by default, verify export health, distill the voice into emotional-memory, relationship, scenario, and session artifacts, then evaluate readiness for private companion chat without visible router labels."

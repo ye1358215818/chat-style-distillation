@@ -1,6 +1,6 @@
 # Privacy Layers
 
-Use layered privacy instead of one-size-fits-all anonymization. The goal is to keep the companion emotionally real while keeping publishable material clean.
+Use layered privacy instead of one-size-fits-all anonymization. The default for this skill is private local companion work: keep the companion emotionally real while keeping publishable material clean.
 
 ## Three Layers
 
@@ -47,13 +47,19 @@ The rule: keep the feeling, lower the identifiability.
 
 ## Script Modes
 
+Default to `companion` for private local relationship-memory bundles:
+
+```bash
+python scripts/run_pipeline.py input.txt --mode companion --format auto --output-dir bundle/
+```
+
 Use `publish` for anything that may leave the local machine:
 
 ```bash
 python scripts/anonymize_chat.py input.txt publish.txt --mode publish --replace "Real Name=PERSON_A" --audit-output audit.json
 ```
 
-Use `companion` for private local companion work:
+Use `companion` for manual private local companion work:
 
 ```bash
 python scripts/anonymize_chat.py input.txt companion.txt --mode companion

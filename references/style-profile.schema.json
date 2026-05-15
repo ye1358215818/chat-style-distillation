@@ -26,6 +26,35 @@
       "type": "string",
       "enum": ["local_source", "companion_artifact", "published_sample"]
     },
+    "observed_traits": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "emotional_moves": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "relationship_loops": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "reply_shapes": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "evidence_notes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "confidence": {
+      "type": "object",
+      "properties": {
+        "overall": { "type": "number", "minimum": 0, "maximum": 100 },
+        "data_volume": { "type": "number", "minimum": 0, "maximum": 100 },
+        "speaker_signal": { "type": "number", "minimum": 0, "maximum": 100 },
+        "scene_coverage": { "type": "number", "minimum": 0, "maximum": 100 }
+      }
+    },
     "voice": {
       "type": "object",
       "required": ["summary", "length_distribution", "rhythm", "phrases", "punctuation", "example_replies"],

@@ -2,6 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from .distillers import (
+    build_emotional_moves,
+    build_evidence_notes,
+    build_observed_traits,
+    build_relationship_loops,
+    build_reply_shapes,
+    confidence_from_analysis,
+)
+
 
 def _speaker_summary(analysis: dict[str, Any], target_speaker: str) -> dict[str, Any]:
     speakers = analysis.get("speakers", {})
@@ -15,6 +24,12 @@ def build_style_profile(
     target_speaker: str = "OTHER",
 ) -> dict[str, Any]:
     target = _speaker_summary(analysis, target_speaker)
+    observed_traits = build_observed_traits(analysis, target_speaker)
+    emotional_moves = build_emotional_moves(analysis, target_speaker)
+    relationship_loops = build_relationship_loops(analysis, target_speaker)
+    reply_shapes = build_reply_shapes(analysis, target_speaker)
+    evidence_notes = build_evidence_notes(analysis, target_speaker)
+    confidence = confidence_from_analysis(analysis, target)
     speaker_split = {
         speaker: int(data.get("messages", 0))
         for speaker, data in analysis.get("speakers", {}).items()
@@ -24,9 +39,9 @@ def build_style_profile(
     for scene, count in target.get("scene_counts", []):
         scene_models[scene] = {
             "trigger": f"Observed {count} message(s) in this scene.",
-            "tone": "Use observed source rhythm; review manually for emotional fidelity.",
-            "length": "Follow length distribution from analysis.",
-            "moves": ["observed_or_review_needed"],
+            "tone": emotional_moves.get(scene, "Use observed source rhythm and keep the emotional move concrete."),
+            "length": reply_shapes.get("ordinary", "Follow length distribution from analysis."),
+            "moves": ["source_rhythm", "private_router", "evidence_grounded"],
             "sample": "",
         }
 
@@ -39,8 +54,14 @@ def build_style_profile(
             "completeness_notes": [] if analysis.get("total_messages") else ["No parsed messages."],
         },
         "privacy_layer": privacy_layer,
+        "observed_traits": observed_traits,
+        "emotional_moves": emotional_moves,
+        "relationship_loops": relationship_loops,
+        "reply_shapes": reply_shapes,
+        "evidence_notes": evidence_notes,
+        "confidence": confidence,
         "voice": {
-            "summary": "Draft profile generated from deterministic metrics; review with representative snippets before companion use.",
+            "summary": "Deterministic profile built from observed rhythm, repeated phrases, scenes, and reply shapes.",
             "length_distribution": {
                 "one_word": f"p10 length {target.get('p10_text_length', 0)}",
                 "one_line": f"median length {target.get('median_text_length', 0)}",
@@ -53,19 +74,19 @@ def build_style_profile(
             "example_replies": [],
         },
         "emotional_patterns": {
-            "care": "Review comfort scene evidence.",
-            "missing": "Review missing scene evidence.",
-            "hurt": "Review conflict/coldness scene evidence.",
-            "jealousy": "Review jealousy scene evidence.",
-            "anger": "Review conflict scene evidence.",
-            "withdrawal": "Review coldness and silence evidence.",
-            "repair": "Review repair scene evidence.",
+            "care": emotional_moves["care"],
+            "missing": emotional_moves["missing"],
+            "hurt": emotional_moves["friction"],
+            "jealousy": "Use jealousy only when observed; otherwise avoid inventing possessiveness.",
+            "anger": emotional_moves["friction"],
+            "withdrawal": "If coldness is observed, preserve clippedness without turning it into cruelty.",
+            "repair": emotional_moves["repair"],
         },
         "relationship_texture": {
-            "needs": [],
-            "wounds": [],
-            "loops": [],
-            "anchors_to_preserve": [],
+            "needs": ["Use concrete closeness before abstract reassurance."],
+            "wounds": ["Mark unresolved hurt as review-needed unless source scenes show repair."],
+            "loops": relationship_loops,
+            "anchors_to_preserve": top_phrases[:6],
         },
         "scenario_models": scene_models,
         "companion_mode": {
@@ -73,6 +94,7 @@ def build_style_profile(
             "reply_contract": [
                 "Match source length distribution and current scene.",
                 "Keep emotional anchors in private companion artifacts.",
+                "Use observed reply shapes before adding any explanatory sentence.",
                 "Step out only when the user asks for analysis.",
             ],
             "reality_handling": [
@@ -113,6 +135,6 @@ def build_style_profile(
                 "No method narration in companion replies.",
                 "No hard identifiers in publish artifacts.",
             ],
-            "known_weaknesses": [],
+            "known_weaknesses": [] if confidence["overall"] >= 50 else ["Low deterministic confidence; review representative snippets before active companion use."],
         },
     }

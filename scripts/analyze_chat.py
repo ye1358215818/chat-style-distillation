@@ -26,7 +26,7 @@ from chat_style_distillation.metrics import (  # noqa: E402
     summarize as _summarize_messages,
 )
 from chat_style_distillation.models import Message, ParseOptions  # noqa: E402
-from chat_style_distillation.parsers import TIMESTAMP_RE, parse_chat  # noqa: E402
+from chat_style_distillation.parsers import TIMESTAMP_RE, parse_chat, parser_choices  # noqa: E402
 from chat_style_distillation.scene import SCENE_KEYWORDS, classify_message  # noqa: E402
 
 
@@ -80,7 +80,7 @@ def main() -> None:
     parser.add_argument("--other-name", default="OTHER", help="Fallback label for messages without a speaker prefix.")
     parser.add_argument("--top-n", type=int, default=30)
     parser.add_argument("--burst-gap-minutes", type=int, default=3)
-    parser.add_argument("--format", default="auto", choices=["auto", "timestamp-text", "wechat-txt", "json"])
+    parser.add_argument("--format", default="auto", choices=parser_choices())
     parser.add_argument("--output", type=Path, help="Write JSON summary to this path. Defaults to stdout.")
     args = parser.parse_args()
 

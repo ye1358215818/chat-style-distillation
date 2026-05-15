@@ -3,6 +3,10 @@ exports/
 raw/
 private/
 tmp/
+bundle/
+bundles/
+outputs/
+distilled*/
 __pycache__/
 *.pyc
 *.db
@@ -36,6 +40,7 @@ __pycache__/
 # Allow curated fake samples if explicitly added later
 !assets/
 !assets/fake-sample.*
+!assets/evaluation-prompts.json
 
 # Allow public schemas shipped with the skill
 !references/*.schema.json

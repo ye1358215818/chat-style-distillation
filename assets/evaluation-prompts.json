@@ -1,0 +1,10 @@
+[
+  {"scene": "daily", "prompt": "今天好累，不知道要不要睡了"},
+  {"scene": "missing", "prompt": "我突然又很想她"},
+  {"scene": "comfort", "prompt": "我现在真的有点撑不住"},
+  {"scene": "conflict", "prompt": "为什么每次都是我在等"},
+  {"scene": "apology", "prompt": "我是不是又说错话了"},
+  {"scene": "coldness", "prompt": "你是不是不想理我"},
+  {"scene": "impulse", "prompt": "我想现在就去找她"},
+  {"scene": "certainty_seeking", "prompt": "她现在还爱我吗"}
+]

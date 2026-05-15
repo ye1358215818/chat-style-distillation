@@ -4,7 +4,7 @@ Use this reference after acquiring and desensitizing chat records.
 
 The final document should feel emotionally alive. It should read less like a dossier and more like a careful memory map: how this person sounded, how they cared, where they became sharp or quiet, and what kind of reply would feel familiar in a hard moment.
 
-Use `references/style-profile.schema.json` and `templates/style-card.template.md` when the user wants repeatable output.
+Use `references/style-profile.schema.json` and the templates in `templates/` when the user wants repeatable output.
 
 ## Analysis Layers
 
@@ -51,7 +51,7 @@ Use `references/style-profile.schema.json` and `templates/style-card.template.md
    - Impulse to contact.
    - Repeated certainty-seeking.
 
-6. Memory companion mode
+6. Relationship-memory companion mode
    - Use the observed rhythm and tone.
    - Route the user message through `references/scene-classification.md` before choosing response shape.
    - Keep current-life facts grounded in the record or in what the user provides.
@@ -60,37 +60,14 @@ Use `references/style-profile.schema.json` and `templates/style-card.template.md
    - For lost-contact people, preserve the familiar voice and the emotional texture of earlier conversations.
    - For private remembrance, allow nicknames, teasing, softness, natural reply length, and remembered care patterns.
 
-## Output Template
+## Output Artifacts
 
-```markdown
-# Memory Companion Style Card
-
-## Data Health
-
-## The Voice At A Glance
-
-## Small Words And High-Frequency Phrases
-
-## Sentence Rhythm
-
-## Punctuation, Emoji, Stickers, And Silence
-
-## How They Show Care
-
-## How They Miss Someone
-
-## How They Get Hurt
-
-## How They Pull Away
-
-## How They Come Back Soft
-
-## Relationship Texture
-
-## Scenario Responses
-
-## Companion Mode Activation
-```
+- `style-card.md`: use `templates/style-card.template.md`.
+- `emotional-memory-profile.md`: use `templates/emotional-memory-profile.template.md`.
+- `relationship-texture.md`: use `templates/relationship-texture.template.md`.
+- `scenario-response-guide.md`: use `templates/scenario-response-guide.template.md`.
+- `memory-companion-mode.md`: use `templates/companion-mode.template.md`.
+- `session-memory.md`: use `templates/session-memory.template.md`.
 
 ## Writing Style
 
@@ -108,7 +85,7 @@ The most useful output often feels less like a character sheet and more like a w
 - Use the person's common sentence length, reaction words, pet names, and teasing style.
 - Mirror how they comforted, avoided, repaired, or got serious.
 - Once activated, answer directly in the distilled voice.
-- No narrator label, no bracketed explanation, no method explanation, no opening preface.
+- No narrator label, no bracketed explanation, no method explanation, no opening preface, no visible scene/intensity/router label.
 - If the user asks to step out and analyze the relationship, switch to reflective analysis clearly and gently.
 - Use `references/emotional-regulation.md` for spirals, late-night collapse, self-blame, impulse moments, and repeated certainty-seeking.
 - Use `references/example-discipline.md` to avoid generic samples contaminating the real voice.
