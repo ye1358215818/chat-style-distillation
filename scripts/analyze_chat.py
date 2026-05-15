@@ -1,244 +1,76 @@
 #!/usr/bin/env python3
-"""Analyze chat export health and real-chat style signals.
-
-The script is local-only and dependency-free. It gives an agent a first pass
-over a chat export without printing the private conversation.
-"""
+"""Analyze chat export health and real-chat style signals."""
 
 from __future__ import annotations
 
 import argparse
 import json
-import re
-import statistics
-from collections import Counter, defaultdict
-from datetime import datetime
+import sys
 from pathlib import Path
 from typing import Any
 
 
-TIMESTAMP_RE = re.compile(r"^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2})\]\s*(.*)$")
+ROOT = Path(__file__).resolve().parents[1]
+SRC = ROOT / "src"
+if str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-MEDIA_PREFIXES = (
-    "[图片]",
-    "[视频]",
-    "[语音]",
-    "[链接]",
-    "[通话]",
-    "[位置]",
-    "[文件]",
-    "[系统]",
+from chat_style_distillation.metrics import (  # noqa: E402
+    DEFAULT_MARKERS,
+    MEDIA_PREFIXES,
+    burst_stats as _burst_stats,
+    is_media_or_system,
+    message_ending,
+    percentile,
+    response_latency as _response_latency,
+    summarize as _summarize_messages,
 )
+from chat_style_distillation.models import Message, ParseOptions  # noqa: E402
+from chat_style_distillation.parsers import TIMESTAMP_RE, parse_chat  # noqa: E402
+from chat_style_distillation.scene import SCENE_KEYWORDS, classify_message  # noqa: E402
 
-DEFAULT_MARKERS = [
-    "哈哈",
-    "笑死",
-    "害",
-    "唉",
-    "哼",
-    "呜",
-    "好哦",
-    "嗯嗯",
-    "哦哦",
-    "无语",
-    "离谱",
-    "想你",
-    "晚安",
-    "早",
-    "宝",
-    "亲亲",
-    "？",
-    "！",
-    "...",
-    "…",
-]
 
-SCENE_KEYWORDS: dict[str, list[str]] = {
-    "daily": ["早", "晚安", "吃饭", "睡", "起床", "上班", "下班", "到家", "干嘛"],
-    "missing": ["想你", "想我", "抱抱", "见你", "梦到", "舍不得"],
-    "comfort": ["别哭", "别硬撑", "我在", "抱抱", "没事", "慢慢说", "听着"],
-    "conflict": ["算了", "随便", "你每次", "生气", "吵", "烦", "不想说"],
-    "apology": ["对不起", "抱歉", "错了", "原谅", "不是故意"],
-    "jealousy": ["吃醋", "谁啊", "别人", "前任", "男的", "女的"],
-    "coldness": ["嗯", "哦", "行", "知道了", "不用", "没事"],
-    "repair": ["好啦", "不气", "回来", "和好", "别闹", "乖"],
-}
+def _message_dict(message: Message) -> dict[str, Any]:
+    return {
+        "timestamp": message.timestamp,
+        "speaker": message.speaker,
+        "content": message.content,
+        "raw": message.raw,
+        "source_line": message.source_line,
+        "message_type": message.message_type,
+    }
+
+
+def _message_from_dict(message: dict[str, Any]) -> Message:
+    return Message(
+        timestamp=message.get("timestamp"),
+        speaker=message.get("speaker", "OTHER"),
+        content=message.get("content", ""),
+        raw=message.get("raw", message.get("content", "")),
+        source_line=message.get("source_line"),
+        message_type=message.get("message_type", "text"),
+    )
 
 
 def read_messages(path: Path, self_name: str | None, other_name: str) -> list[dict[str, Any]]:
-    messages: list[dict[str, Any]] = []
-    current: dict[str, Any] | None = None
-
-    for raw in path.read_text(encoding="utf-8").splitlines():
-        match = TIMESTAMP_RE.match(raw)
-        if match:
-            if current:
-                messages.append(current)
-            ts = datetime.strptime(match.group(1), "%Y-%m-%d %H:%M")
-            rest = match.group(2)
-            speaker = other_name
-            content = rest.strip()
-            if self_name and rest.startswith(f"{self_name}:"):
-                speaker = "SELF"
-                content = rest.split(":", 1)[1].strip()
-            elif ":" in rest:
-                maybe_speaker, maybe_content = rest.split(":", 1)
-                if 0 < len(maybe_speaker) <= 32:
-                    speaker = maybe_speaker.strip()
-                    content = maybe_content.strip()
-            current = {"timestamp": ts, "speaker": speaker, "content": content}
-        elif current and raw:
-            current["content"] += "\n" + raw
-
-    if current:
-        messages.append(current)
-    return messages
-
-
-def is_media_or_system(content: str) -> bool:
-    text = content.strip()
-    if text.startswith("<?xml") or "<msg>" in text:
-        return True
-    if any(text.startswith(prefix) for prefix in MEDIA_PREFIXES):
-        return True
-    return bool(re.fullmatch(r"\[[^\]]+\](?:\s*local_id=\d+)?", text))
-
-
-def percentile(values: list[int | float], pct: float) -> float:
-    if not values:
-        return 0
-    ordered = sorted(values)
-    if len(ordered) == 1:
-        return float(ordered[0])
-    idx = (len(ordered) - 1) * pct
-    lo = int(idx)
-    hi = min(lo + 1, len(ordered) - 1)
-    frac = idx - lo
-    return round(ordered[lo] * (1 - frac) + ordered[hi] * frac, 2)
+    result = parse_chat(path, ParseOptions(self_name=self_name, other_name=other_name))
+    return [_message_dict(message) for message in result.messages]
 
 
 def classify_scene(content: str) -> str:
-    text = content.strip()
-    scores = {
-        scene: sum(1 for keyword in keywords if keyword in text)
-        for scene, keywords in SCENE_KEYWORDS.items()
-    }
-    scene, score = max(scores.items(), key=lambda item: item[1])
-    return scene if score else "unspecified"
-
-
-def message_ending(content: str) -> str:
-    text = content.strip()
-    if not text:
-        return ""
-    if text.endswith(("...", "…")):
-        return "ellipsis"
-    last = text[-1]
-    if last in "。！？!?~～":
-        return last
-    return "plain"
+    return classify_message(Message(timestamp=None, speaker="OTHER", content=content, raw=content)).primary
 
 
 def burst_stats(messages: list[dict[str, Any]], max_gap_minutes: int) -> dict[str, Any]:
-    bursts: list[dict[str, Any]] = []
-    current: list[dict[str, Any]] = []
-
-    for message in messages:
-        if not current:
-            current = [message]
-            continue
-        gap = (message["timestamp"] - current[-1]["timestamp"]).total_seconds() / 60
-        if message["speaker"] == current[-1]["speaker"] and gap <= max_gap_minutes:
-            current.append(message)
-        else:
-            if len(current) > 1:
-                bursts.append({"speaker": current[0]["speaker"], "size": len(current)})
-            current = [message]
-    if len(current) > 1:
-        bursts.append({"speaker": current[0]["speaker"], "size": len(current)})
-
-    by_speaker: dict[str, list[int]] = defaultdict(list)
-    for burst in bursts:
-        by_speaker[burst["speaker"]].append(burst["size"])
-
-    return {
-        speaker: {
-            "burst_count": len(sizes),
-            "avg_burst_size": round(sum(sizes) / len(sizes), 2) if sizes else 0,
-            "max_burst_size": max(sizes) if sizes else 0,
-        }
-        for speaker, sizes in by_speaker.items()
-    }
+    return _burst_stats([_message_from_dict(message) for message in messages], max_gap_minutes)
 
 
 def response_latency(messages: list[dict[str, Any]]) -> dict[str, Any]:
-    latencies: dict[str, list[float]] = defaultdict(list)
-    previous: dict[str, Any] | None = None
-    for message in messages:
-        if previous and previous["speaker"] != message["speaker"]:
-            delta = (message["timestamp"] - previous["timestamp"]).total_seconds() / 60
-            if 0 <= delta <= 60 * 24:
-                latencies[message["speaker"]].append(round(delta, 2))
-        previous = message
-
-    return {
-        speaker: {
-            "count": len(values),
-            "median_minutes": percentile(values, 0.5),
-            "p90_minutes": percentile(values, 0.9),
-        }
-        for speaker, values in latencies.items()
-    }
+    return _response_latency([_message_from_dict(message) for message in messages])
 
 
 def summarize(messages: list[dict[str, Any]], top_n: int, burst_gap_minutes: int) -> dict[str, Any]:
-    by_speaker: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for message in messages:
-        by_speaker[message["speaker"]].append(message)
-
-    speakers: dict[str, Any] = {}
-    for speaker, items in by_speaker.items():
-        text_items = [m for m in items if not is_media_or_system(m["content"])]
-        lengths = [len(m["content"].replace("\n", "")) for m in text_items]
-        phrases = Counter(
-            m["content"].strip()
-            for m in text_items
-            if 1 <= len(m["content"].strip()) <= 24
-        )
-        marker_counts = {
-            marker: sum(m["content"].count(marker) for m in text_items)
-            for marker in DEFAULT_MARKERS
-        }
-        marker_counts = {k: v for k, v in marker_counts.items() if v}
-        scenes = Counter(classify_scene(m["content"]) for m in text_items)
-        endings = Counter(message_ending(m["content"]) for m in text_items if m["content"].strip())
-        multi_line = sum(1 for m in text_items if "\n" in m["content"])
-
-        speakers[speaker] = {
-            "messages": len(items),
-            "text_messages": len(text_items),
-            "media_or_system_messages": len(items) - len(text_items),
-            "avg_text_length": round(sum(lengths) / len(lengths), 2) if lengths else 0,
-            "median_text_length": percentile(lengths, 0.5),
-            "p10_text_length": percentile(lengths, 0.1),
-            "p90_text_length": percentile(lengths, 0.9),
-            "multi_line_messages": multi_line,
-            "top_short_phrases": phrases.most_common(top_n),
-            "marker_counts": marker_counts,
-            "scene_counts": scenes.most_common(),
-            "ending_counts": endings.most_common(),
-            "top_hours": Counter(m["timestamp"].hour for m in items).most_common(8),
-        }
-
-    return {
-        "total_messages": len(messages),
-        "first_timestamp": messages[0]["timestamp"].strftime("%Y-%m-%d %H:%M") if messages else None,
-        "last_timestamp": messages[-1]["timestamp"].strftime("%Y-%m-%d %H:%M") if messages else None,
-        "speakers": speakers,
-        "burst_stats": burst_stats(messages, burst_gap_minutes),
-        "response_latency": response_latency(messages),
-        "scene_keywords": SCENE_KEYWORDS,
-    }
+    return _summarize_messages([_message_from_dict(message) for message in messages], top_n, burst_gap_minutes)
 
 
 def main() -> None:
@@ -248,11 +80,15 @@ def main() -> None:
     parser.add_argument("--other-name", default="OTHER", help="Fallback label for messages without a speaker prefix.")
     parser.add_argument("--top-n", type=int, default=30)
     parser.add_argument("--burst-gap-minutes", type=int, default=3)
+    parser.add_argument("--format", default="auto", choices=["auto", "timestamp-text", "wechat-txt", "json"])
     parser.add_argument("--output", type=Path, help="Write JSON summary to this path. Defaults to stdout.")
     args = parser.parse_args()
 
-    messages = read_messages(args.input, args.self_name, args.other_name)
-    summary = summarize(messages, args.top_n, args.burst_gap_minutes)
+    result = parse_chat(args.input, ParseOptions(self_name=args.self_name, other_name=args.other_name), fmt=args.format)
+    summary = _summarize_messages(result.messages, args.top_n, args.burst_gap_minutes)
+    if result.warnings:
+        summary["parse_warnings"] = result.warnings
+    summary["input_format"] = result.format
     payload = json.dumps(summary, ensure_ascii=False, indent=2)
 
     if args.output:

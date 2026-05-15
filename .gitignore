@@ -2,6 +2,9 @@
 exports/
 raw/
 private/
+tmp/
+__pycache__/
+*.pyc
 *.db
 *.db-shm
 *.db-wal

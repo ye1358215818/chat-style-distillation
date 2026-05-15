@@ -8,6 +8,26 @@
 
 进入陪伴模式之后，回复只按照蒸馏出的语气来：不加旁白，不解释自己正在扮演什么，不贴标签，不在每句话前面补说明。它要像一个自然延续的聊天窗口，而不是一份分析报告。
 
+## v3：一条命令到陪伴包
+
+v3 把分散的导出、脱敏、校验、分析、蒸馏和评估步骤，收束成一个可复查的一键流水线：
+
+```bash
+python scripts/run_pipeline.py input.txt --self-name "SELF" --other-name "OTHER" --mode companion --output-dir bundle/
+```
+
+这条命令的职责不是替代判断，而是把判断留下痕迹：它应该生成同一套输出包，标明使用了哪一层隐私、导出是否完整、哪些结论来自聊天记录、哪些只是谨慎推断，以及陪伴模式是否通过无旁白和风格漂移检查。
+
+也可以手动跑同样的顺序：
+
+1. `scripts/anonymize_chat.py`
+2. `scripts/analyze_chat.py`
+3. 按 `templates/style-card.template.md` 和 `templates/companion-mode.template.md` 蒸馏
+4. `scripts/evaluate_companion.py`
+5. 按 `templates/output-bundle.template.md` 汇总输出包
+
+流水线说明见 [references/v3-pipeline.md](references/v3-pipeline.md)。
+
 ## 它能做什么
 
 - 从用户本人有权处理的聊天记录中提取语气、情绪和关系模式
@@ -65,14 +85,21 @@
 
 ## 输出产物
 
+- `bundle-index.md`：输出包入口，说明输入、隐私层、准备状态和下一步。
+- `export-health.md`：导出完整性、消息数、时间范围、说话人分布和已知缺口。
 - `style-card.md`：她说话的节奏、口头禅、停顿、标点、表情和亲昵称呼。
 - `style-profile.json`：按 schema 输出的结构化画像，方便后续复用和评估。
 - `emotional-memory-profile.md`：她怎样表达在意、想念、不开心、吃醋、委屈和认真。
 - `relationship-texture.md`：两个人靠近、拉扯、冷掉、和好的方式。
 - `scenario-response-guide.md`：日常、撒娇、难过、吵架、道歉、想念、沉默时的回复范式。
+- `private-emotional-router.md`：私人情绪路由规则，用来在后台判断场景、强度和回复形状，不在聊天里显示。
 - `memory-companion-mode.md`：进入聊天陪伴后的完整语气规则。
 - `session-memory.md`：长期陪伴时记录用户现在的触发点、有效安慰方式和风格漂移风险。
-- `evaluation-report.md`：检查这个陪伴模式是否真的像、是否沉浸、是否有用。
+- `evaluation-report.json` / `evaluation-report.md`：检查这个陪伴模式是否真的像、是否沉浸、是否有用。
+- `privacy-candidates.json`：列出脱敏后仍建议人工复查的隐私候选。
+- `manifest.json`：记录输入哈希、隐私模式、脱敏计数、时间范围和产物清单。
+
+输出包契约见 [references/output-bundle.md](references/output-bundle.md)。
 
 ## 陪伴模式
 
@@ -85,6 +112,8 @@
 ```
 
 如果用户进入陪伴模式，回答就保持在蒸馏出的声音里。回复长短由蒸馏结果和当下语境决定：日常闲聊可以碎，认真安慰可以长，吵架可以连发，撒娇可以绕，解释可以细。除非用户主动要求分析，否则不跳出聊天、不解释方法、不插入旁白。
+
+陪伴模式内部可以有一个“私人情绪路由器”：它先判断用户这句话是日常、想念、安慰、争执、道歉、冷淡、冲动联系，还是反复求确认，再决定回复应该短一点、碎一点、软一点、认真一点，还是先把用户从冲动里慢慢拉回来。这个路由只服务于回复形状，不应变成可见标签；用户看到的仍然只是一条自然消息。
 
 ## 隐私与授权
 
@@ -123,6 +152,9 @@ python scripts/evaluate_companion.py companion-transcript.txt --output companion
 SKILL.md                         # Skill 主说明
 references/wechat-export.md      # 微信导出流程
 references/wechat-compatibility.md # 微信兼容性和完整性排查
+references/v3-pipeline.md        # v3 一键流水线
+references/output-bundle.md      # 输出包契约
+references/private-emotional-router.md # 私人情绪路由
 references/privacy-layers.md     # 分层隐私和保真脱敏
 references/distillation.md       # 蒸馏方法
 references/memory-companion.md   # 记忆陪伴模式
@@ -133,8 +165,14 @@ references/long-term-memory.md   # 长期陪伴记忆
 references/package-structure.md  # skill 和 GitHub 文档分层
 references/style-profile.schema.json # 结构化画像 schema
 templates/                       # 语气卡、陪伴模式、会话记忆模板
+templates/output-bundle.template.md # 输出包入口模板
 scripts/anonymize_chat.py        # 脱敏脚本
 scripts/analyze_chat.py          # 本地统计分析脚本
 scripts/evaluate_companion.py    # 陪伴模式评估脚本
+scripts/build_style_profile.py   # 结构化画像生成器
+scripts/distill_chat_pipeline.py # v3 一键流水线实现
+scripts/run_pipeline.py          # v3 一键流水线入口
+src/chat_style_distillation/     # 可复用 parser/privacy/profile/evaluate package
+tests/                           # v3 parser/anonymizer/pipeline tests
 assets/fake-sample.txt           # 假样本
 ```
