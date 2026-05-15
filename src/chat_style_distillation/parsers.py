@@ -40,6 +40,15 @@ def normalize_speaker(speaker: str, options: ParseOptions) -> str:
     return "SELF" if options.self_name and speaker == options.self_name else speaker
 
 
+def should_accept_inline_speaker(speaker: str, options: ParseOptions) -> bool:
+    if not speaker or len(speaker) > 32:
+        return False
+    if options.other_name and options.other_name != "OTHER":
+        explicit = {value for value in (options.self_name, options.other_name, "SELF", "OTHER") if value}
+        return speaker in explicit
+    return True
+
+
 def split_timestamp_records(text: str) -> list[tuple[str, str, int]]:
     records: list[tuple[str, str, int]] = []
     matches = list(TIMESTAMP_RE.finditer(text))
@@ -73,12 +82,9 @@ def parse_timestamp_text(path: Path, options: ParseOptions) -> ParseResult:
         first_line = raw_body.splitlines()[0] if raw_body else ""
         speaker = options.other_name
         content = raw_body
-        if options.self_name and first_line.startswith(f"{options.self_name}:"):
-            speaker = "SELF"
-            content = raw_body.split(":", 1)[1].strip()
-        elif ":" in first_line:
+        if ":" in first_line:
             maybe_speaker, maybe_content = raw_body.split(":", 1)
-            if 0 < len(maybe_speaker.strip()) <= 32:
+            if should_accept_inline_speaker(maybe_speaker.strip(), options):
                 speaker = normalize_speaker(maybe_speaker.strip(), options)
                 content = maybe_content.strip()
 
